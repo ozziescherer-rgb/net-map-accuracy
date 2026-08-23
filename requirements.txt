@@ -1,0 +1,5 @@
+opendssdirect.py>=0.9
+numpy
+pandas
+scipy
+scikit-learn
