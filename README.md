@@ -1,6 +1,6 @@
 # Net Map Accuracy
 
-Code for the preprint **"Net Map Accuracy: Why Meter-to-Transformer Correction Must Be
+Code for the preprint (DOI:10.5281/zenodo.22063360)**"Net Map Accuracy: Why Meter-to-Transformer Correction Must Be
 Evaluated Under Application"** (O. Scherer, 2026).
 
 Utilities' meter-to-transformer records are ~5-20% wrong. Tools that fix them from AMI
