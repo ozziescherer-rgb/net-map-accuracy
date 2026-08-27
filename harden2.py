@@ -2,9 +2,9 @@
 across verification draws. Standalone (no audit.py import side effects)."""
 import re
 import numpy as np, pandas as pd
-from lib import corr_matrix, degrade, CKT
+from lib import corr_matrix, degrade, CKT, OUT
 
-meta = pd.read_csv("/home/user/xfmr/meta.csv")
+meta = pd.read_csv(f"{OUT}/meta.csv")
 xfmrs = sorted(meta.xfmr.unique())
 gid = {x: i for i, x in enumerate(xfmrs)}
 true_g = meta.xfmr.map(gid).values
@@ -24,7 +24,7 @@ D = np.sqrt(((XY[:, None, :]-XY[None, :, :])**2).sum(-1))
 np.fill_diagonal(D, np.inf); D = np.nan_to_num(D, nan=np.inf)
 nearest = np.argsort(D, axis=1)[:, :15]
 sp = np.median(np.sort(D, axis=1)[:, 0][np.isfinite(np.sort(D, axis=1)[:, 0])])
-C = corr_matrix(degrade(np.load("/home/user/xfmr/V15_90d.npy")))
+C = corr_matrix(degrade(np.load(f"{OUT}/V15_90d.npy")))
 
 def run(frac, cseed, jseed, vseed):
     rj = np.random.default_rng(jseed)
@@ -80,7 +80,7 @@ for frac in (0.05, 0.20):
     df = pd.DataFrame(rows); m, s = df.mean(), df.std()
     print(f"{frac:.0%}: base {m.base:.3f}  oracle {m.oracle:.3f}±{s.oracle:.3f}  "
           f"obs {m.obs:.3f}±{s.obs:.3f}  blind {m.blind:.3f}±{s.blind:.3f}")
-    df.to_csv(f"/home/user/xfmr/sweep_{int(frac*100)}pct.csv", index=False)
+    df.to_csv(f"{OUT}/sweep_{int(frac*100)}pct.csv", index=False)
 
 print("\n== (b) gate variance across 20 verification draws (10%, cseed=7) ==")
 rows = [run(0.10, 7, 5, v) for v in range(2000, 2020)]
@@ -89,4 +89,4 @@ print(f"obs acc: {df.obs.mean():.3f} ± {df.obs.std():.3f}  "
       f"(range {df.obs.min():.3f}–{df.obs.max():.3f})")
 print(f"stop point: {df.stop.mean():.0f} ± {df.stop.std():.0f} of {df.nprops.iloc[0]} proposals")
 print(f"oracle {df.oracle.iloc[0]:.3f}, blind {df.blind.iloc[0]:.3f}, base {df.base.iloc[0]:.3f}")
-df.to_csv("/home/user/xfmr/gate_variance.csv", index=False)
+df.to_csv(f"{OUT}/gate_variance.csv", index=False)

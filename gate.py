@@ -1,13 +1,12 @@
 """Confidence-gated correction: apply fixes in descending confidence, track NET map accuracy.
 The question: how many corrections can you auto-apply before FPs eat the gains?"""
 import numpy as np, pandas as pd
-from lib import load_meta, corr_matrix, degrade
+from lib import load_meta, corr_matrix, degrade, OUT, CKT
 
 meta, true_g, nearest = load_meta()
 n = len(true_g)
-V90 = np.load("/home/user/xfmr/V15_90d.npy")
+V90 = np.load(f"{OUT}/V15_90d.npy")
 import re
-from lib import CKT
 coords = {}
 for ln in open(f"{CKT}/Buscoords_ckt5.dss"):
     p = ln.replace(",", " ").split()
@@ -77,4 +76,4 @@ for k, (conf, i, gb) in enumerate(props, 1):
         print(f"{k:>8} {acc:>8.3f} {tp:>5} {fp:>5} {tp/(tp+fp+1e-9):>9.2f}")
 print(f"\nbest: apply top-{best[1]} corrections -> map accuracy {best[0]:.3f} "
       f"(from 0.901; ceiling with perfect corrections would be ~0.99)")
-pd.DataFrame(rows).to_csv("/home/user/xfmr/gate_curve.csv", index=False)
+pd.DataFrame(rows).to_csv(f"{OUT}/gate_curve.csv", index=False)

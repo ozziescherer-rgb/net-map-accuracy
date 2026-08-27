@@ -2,6 +2,7 @@
 import numpy as np, pandas as pd
 from scipy.stats import rankdata
 from cluster import corr_matrix, experiment, V, meta  # reuse
+from lib import OUT
 
 PU = 1/240.0  # volts -> pu on 240 V base
 rng = np.random.default_rng(11)
@@ -45,4 +46,4 @@ for name, f in scenarios.items():
     print(f"{name:34s} {r['detection_recall']:6.3f} {r['false_positive_rate']:6.3f} "
           f"{r['correction_acc']:6.3f} {r['correction_acc_nonsingleton']:13.3f}")
     rows.append(dict(scenario=name, **r))
-pd.DataFrame(rows).to_csv("/home/user/xfmr/degradation_results.csv", index=False)
+pd.DataFrame(rows).to_csv(f"{OUT}/degradation_results.csv", index=False)

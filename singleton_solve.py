@@ -7,13 +7,13 @@ Evaluated over 5 corruption seeds on ckt5, 90 days.
 """
 import re
 import numpy as np, pandas as pd
-from lib import corr_matrix, degrade, CKT
+from lib import degrade, CKT, OUT
 
-meta = pd.read_csv("/home/user/xfmr/meta.csv")
+meta = pd.read_csv(f"{OUT}/meta.csv")
 xfmrs = sorted(meta.xfmr.unique()); gid = {x: i for i, x in enumerate(xfmrs)}
 true_g = meta.xfmr.map(gid).values; n = len(true_g); nx = len(xfmrs)
-V = degrade(np.load("/home/user/xfmr/V15_90d.npy"))       # what meters report
-P = np.load("/home/user/xfmr/P15_90d.npy")                # kW, also reported
+V = degrade(np.load(f"{OUT}/V15_90d.npy"))       # what meters report
+P = np.load(f"{OUT}/P15_90d.npy")                # kW, also reported
 T = V.shape[0]
 
 coords = {}
@@ -39,9 +39,15 @@ Bp = np.linalg.lstsq(X, P, rcond=None)[0]; rP = P - X @ Bp
 rVz = (rV - rV.mean(0)) / (rV.std(0) + 1e-12)
 rPz = (rP - rP.mean(0)) / (rP.std(0) + 1e-12)
 
-def coupling_z(i, members):
-    """pooled evidence that group members' voltage responds (negatively) to meter i's load.
-    corr per member, Fisher-pooled; z scaled by sqrt(T * n_members)."""
+def coupling_score(i, members):
+    """Pooled evidence that group members' voltage responds (negatively) to meter i's load.
+    Mean per-member correlation, scaled by sqrt(T * n_members).
+
+    NOT a z-score. The sqrt(T) scaling assumes T independent samples; measured lag-1
+    autocorrelation of the residual load is rho ~ 0.68 (voltage rho ~ 0.24), giving an
+    effective sample size of ~1650 rather than T = 8640. A reported value of -8 is
+    roughly 3.5 sigma, not 8. Treat this as a ranking statistic only; THETA below was
+    selected empirically from the score distribution, not from a normal tail probability."""
     mem = members[members != i]
     if len(mem) == 0: return np.nan
     c = (rVz[:, mem] * rPz[:, [i]]).mean(0)        # corr(rV_m, rP_i) per member
@@ -53,14 +59,14 @@ rng0 = np.random.default_rng(0)
 zt, zu = [], []
 for i in rng0.choice(n, 300, replace=False):
     mem = np.where(true_g == true_g[i])[0]
-    z = coupling_z(i, mem)
+    z = coupling_score(i, mem)
     if not np.isnan(z): zt.append(z)
     gW = nearest[true_g[i]][rng0.integers(0, 5)]
-    z = coupling_z(i, np.where(true_g == gW)[0])
+    z = coupling_score(i, np.where(true_g == gW)[0])
     if not np.isnan(z): zu.append(z)
-print(f"coupling z: true family mean {np.mean(zt):.1f} (p90 {np.percentile(zt,90):.1f}), "
+print(f"coupling score: true family mean {np.mean(zt):.1f} (p90 {np.percentile(zt,90):.1f}), "
       f"unrelated mean {np.mean(zu):.1f} (p10 {np.percentile(zu,10):.1f})")
-THETA = -8.0   # coupled iff z < THETA (deeply negative = voltage dips with my load)
+THETA = -8.0   # coupled iff score < THETA (empirical threshold, not a sigma level) (deeply negative = voltage dips with my load)
 
 print(f"\n{'seed':>5} {'singT_n':>7} {'sing_recovered':>14} {'sing_prec':>9} "
       f"{'famT_verdict_ok':>15} {'corr_fix_new':>12}")
@@ -83,7 +89,7 @@ for cseed, jseed in [(7,5),(17,15),(27,25),(37,35),(47,45)]:
     def decide(i):
         """returns (verdict, assignment): verdict 'family' or 'singleton'."""
         cands = [g for g in gps_full[i, :10] if occ[g] and g != rec[i]]
-        zs = {g: coupling_z(i, np.where(rec == g)[0]) for g in cands}
+        zs = {g: coupling_score(i, np.where(rec == g)[0]) for g in cands}
         zs = {g: z for g, z in zs.items() if not np.isnan(z)}
         gbest = min(zs, key=zs.get) if zs else None
         if gbest is not None and zs[gbest] < THETA:

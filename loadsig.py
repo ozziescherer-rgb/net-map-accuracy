@@ -1,13 +1,13 @@
 """Physics score: a meter's voltage residual should anti-correlate with ITS transformer's
 aggregate load. Combine with meter-meter correlation; score correction accuracy."""
 import numpy as np, pandas as pd
-from lib import load_meta, corr_matrix, degrade
+from lib import load_meta, corr_matrix, degrade, OUT
 
 meta, true_g, nearest = load_meta()
 n = len(true_g)
-V1 = np.load("/home/user/xfmr/V_1min.npy")
+V1 = np.load(f"{OUT}/V_1min.npy")
 V = degrade(V1.reshape(-1, 15, n).mean(axis=1))       # AMI voltage (degraded)
-P = np.load("/home/user/xfmr/P15.npy")                # AMI kW (meters report this too)
+P = np.load(f"{OUT}/P15.npy")                # AMI kW (meters report this too)
 T = V.shape[0]
 nx = true_g.max() + 1
 
@@ -71,7 +71,7 @@ for lam in (0.0, 0.5, 1.0, 2.0):
     accf = (corrected[bad][fixable] == true_g[bad][fixable]).mean()
     print(f"lambda={lam:3.1f}  correction={acc:.3f}  correction_fixable={accf:.3f}", flush=True)
     res_rows.append(dict(lam=lam, corr=acc, corr_fix=accf))
-pd.DataFrame(res_rows).to_csv("/home/user/xfmr/loadsig_results.csv", index=False)
+pd.DataFrame(res_rows).to_csv(f"{OUT}/loadsig_results.csv", index=False)
 
 # how well does physics ALONE separate true vs wrong groups?
 true_s, wrong_s = [], []

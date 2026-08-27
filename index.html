@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Net Map Accuracy — transformer intelligence from AMI data</title>
+<meta name="description" content="Research by Ozzie Scherer: correcting utilities' meter-to-transformer records from existing AMI voltage data, verification-gated so corrections stop before they do net harm. Seeking a first utility field site.">
+<style>
+  :root {
+    --ink: #1a2332; --muted: #5a6678; --line: #e3e7ee;
+    --accent: #0d5c63; --accent-soft: #eaf4f4; --bg: #fcfcfa;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--bg); color: var(--ink);
+    line-height: 1.65; font-size: 17px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 3.5rem 1.4rem 4rem; }
+  header { border-bottom: 1px solid var(--line); padding-bottom: 2rem; margin-bottom: 2.2rem; }
+  .kicker {
+    font-family: Helvetica, Arial, sans-serif; font-size: .78rem;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+    margin-bottom: .9rem;
+  }
+  h1 { font-size: 2rem; line-height: 1.25; font-weight: 600; margin-bottom: .9rem; }
+  .lede { font-size: 1.12rem; color: var(--muted); }
+  h2 {
+    font-family: Helvetica, Arial, sans-serif; font-size: .82rem;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--accent);
+    margin: 2.4rem 0 .8rem;
+  }
+  p { margin-bottom: 1rem; }
+  .stats {
+    display: flex; flex-wrap: wrap; gap: 1px; background: var(--line);
+    border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+    margin: 1.4rem 0;
+  }
+  .stat { flex: 1 1 160px; background: #fff; padding: 1.1rem 1rem; }
+  .stat b {
+    display: block; font-size: 1.55rem; font-weight: 600; color: var(--accent);
+    font-family: Helvetica, Arial, sans-serif; line-height: 1.2;
+  }
+  .stat span { font-size: .85rem; color: var(--muted); font-family: Helvetica, Arial, sans-serif; }
+  .offer {
+    background: var(--accent-soft); border: 1px solid #cfe3e3;
+    border-radius: 8px; padding: 1.3rem 1.4rem; margin: 1.4rem 0;
+  }
+  .offer p:last-child { margin-bottom: 0; }
+  a { color: var(--accent); }
+  .links { list-style: none; }
+  .links li { margin-bottom: .55rem; }
+  .links b { font-family: Helvetica, Arial, sans-serif; font-size: .9rem; }
+  footer {
+    border-top: 1px solid var(--line); margin-top: 2.8rem; padding-top: 1.4rem;
+    font-size: .9rem; color: var(--muted);
+  }
+  @media (max-width: 480px) { h1 { font-size: 1.6rem; } body { font-size: 16px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Independent research · Ozzie Scherer</div>
+  <h1>Net Map Accuracy: transformer intelligence from the AMI data utilities already have</h1>
+  <p class="lede">Correcting meter-to-transformer records from ordinary smart-meter voltage data —
+  verification-gated so corrections stop before they do net harm — then turning the corrected map into
+  transformer aging rankings and EV hosting capacity.</p>
+</header>
+
+<h2>The problem</h2>
+<p>Most utilities' records of which transformer serves which meter are somewhere between 5 and 20%
+wrong — ComEd's field audit documented errors on roughly 5% of 4&nbsp;million meters. A wrong map
+quietly breaks every per-transformer analysis built on it, exactly as EV and heat-pump load
+concentrates on individual units with year-plus replacement lead times. Fixing the map manually
+costs $50–100+ per transformer visit, so it almost never happens.</p>
+
+<h2>The method</h2>
+<p>Meters sharing a transformer share a secondary, so their voltages move together. The method
+identifies mis-mapped meters from 15-minute AMI voltage correlation, proposes corrections ranked by
+confidence, and — the central contribution — <em>stops applying them at the point where they would
+start doing harm</em>, located empirically by about 40 crew spot-checks. Correction tools evaluated
+only on detection accuracy can leave a map worse than they found it; this one is evaluated on net map
+accuracy after application, and gated on it.</p>
+
+<div class="stats">
+  <div class="stat"><b>~93%</b><span>of fixable record errors corrected (benchmark on EPRI utility-derived test feeders)</span></div>
+  <div class="stat"><b>~55%</b><span>published state of the art on the same task</span></div>
+  <div class="stat"><b>~40</b><span>field spot-checks — the only field labor required</span></div>
+  <div class="stat"><b>No net harm</b><span>at realistic error rates (≤10%), the gated map is never left worse than the records it started from</span></div>
+</div>
+
+<p>The corrected map then feeds IEEE C57.91 thermal models: which transformers are aging fastest,
+and how much more load each one can take.</p>
+
+<h2>What it's worth — example: a 15,000-transformer system</h2>
+<div class="stats">
+  <div class="stat"><b>$750k–1.5M</b><span>cost of getting the same corrected map by manual field verification at standard truck-roll rates ($50–100+ per transformer) — this method needs ~40 checks instead</span></div>
+  <div class="stat"><b>$25–75k/yr</b><span>estimated avoided emergency replacements: the corrected map surfaces at-risk units the wrong map hides (in benchmarks, top-25 at-risk capture improves from 14 to 19), turning $8–15k emergency failures into planned work</span></div>
+  <div class="stat"><b>Capex targeting</b><span>per-transformer headroom lets EV/heat-pump-driven upgrades go where they're needed instead of blanket upsizing — at today's transformer prices and lead times, the largest and least quantifiable saving</span></div>
+</div>
+<p style="font-size:.9rem; color:var(--muted);">Figures are order-of-magnitude, from standard industry
+labor and equipment costs plus benchmark results; the free field validation exists precisely so a
+utility can check them against its own numbers.</p>
+
+<h2>Looking for a first field site</h2>
+<div class="offer">
+  <p><b>The trade:</b> a utility provides an anonymized AMI extract (pseudonymous IDs — no names,
+  addresses, or account data) and roughly 40 field spot-checks by its crews, at whatever pace works.
+  It keeps the corrected connectivity map, the transformer aging ranking, and the per-transformer
+  hosting-capacity analysis. No cost, no hardware, no integration — the export is about an afternoon
+  of one admin's time.</p>
+  <p>If this seems worth 30 minutes: <a href="mailto:ozziescherer@gmail.com">ozziescherer@gmail.com</a></p>
+</div>
+
+<h2>Paper &amp; code</h2>
+<ul class="links">
+  <li><b>Preprint:</b> <a href="https://doi.org/10.5281/zenodo.22063360">Net Map Accuracy: Why Meter-to-Transformer Correction Must Be Evaluated Under Application</a> (Zenodo, DOI 10.5281/zenodo.22063360)</li>
+  <li><b>Code:</b> <a href="https://github.com/ozziescherer-rgb/net-map-accuracy">github.com/ozziescherer-rgb/net-map-accuracy</a> — reproduces every number in the paper on public EPRI circuit models</li>
+</ul>
+
+<h2>About</h2>
+<p>I'm Ozzie Scherer, a computer science and molecular engineering student at the University of
+Chicago. This is independent research; I need the field validation more than a utility needs me,
+which is why the first deployments are free. Patent pending (US 64/139,077).</p>
+
+<footer>
+  © 2026 Ozzie Scherer · <a href="mailto:ozziescherer@gmail.com">ozziescherer@gmail.com</a> ·
+  <a href="https://doi.org/10.5281/zenodo.22063360">Paper</a> ·
+  <a href="https://github.com/ozziescherer-rgb/net-map-accuracy">Code</a>
+</footer>
+
+</div>
+</body>
+</html>

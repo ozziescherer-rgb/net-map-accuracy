@@ -1,11 +1,11 @@
 """Score ckt24 with the frozen recipe: degrade -> Spearman -> GPS-K5 two-threshold."""
 import re
 import numpy as np, pandas as pd
-from lib import corr_matrix, degrade
+from lib import corr_matrix, degrade, OUT, CKT24
 
-CKT = "/home/user/electricdss-tst/Version8/Distrib/EPRITestCircuits/ckt24"
-V = degrade(np.load("/home/user/xfmr/V24.npy"))
-meta = pd.read_csv("/home/user/xfmr/meta24.csv")
+CKT = CKT24
+V = degrade(np.load(f"{OUT}/V24.npy"))
+meta = pd.read_csv(f"{OUT}/meta24.csv")
 n = len(meta)
 xfmrs = sorted(meta.xf.unique())
 gid = {x: i for i, x in enumerate(xfmrs)}

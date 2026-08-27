@@ -3,10 +3,10 @@ theta_low: within-group corr below this = record anomalous.
 theta_high: corr to an alternative group above this = looks like a true sibling.
 Singleton-recorded meters are only flagged via theta_high (no co-members to test against)."""
 import numpy as np, pandas as pd
-from lib import load_meta, corr_matrix, degrade
+from lib import load_meta, corr_matrix, degrade, OUT
 
 meta, true_g, nearest = load_meta()
-V1 = np.load("/home/user/xfmr/V_1min.npy")
+V1 = np.load(f"{OUT}/V_1min.npy")
 V = degrade(V1.reshape(-1, 15, V1.shape[1]).mean(axis=1))   # true-average, degraded, 28d
 C = corr_matrix(V)
 n = len(true_g)
@@ -54,4 +54,4 @@ for k_low in (3, 5, 8):
         cfix = (corrected[bad][fixable] == true_g[bad][fixable]).mean()
         print(f"{k_low:>6} {k_high:>6} {det:6.3f} {fpr:6.3f} {corr:6.3f} {cfix:8.3f}")
         rows.append(dict(k_low=k_low, k_high=k_high, det=det, fpr=fpr, corr=corr, corr_fix=cfix))
-pd.DataFrame(rows).to_csv("/home/user/xfmr/improved_results.csv", index=False)
+pd.DataFrame(rows).to_csv(f"{OUT}/improved_results.csv", index=False)

@@ -1,58 +1,31 @@
-# Net Map Accuracy
+# v2 experiments (work in progress — NOT the published pipeline)
 
-Code for the preprint (DOI:10.5281/zenodo.22063360)**"Net Map Accuracy: Why Meter-to-Transformer Correction Must Be
-Evaluated Under Application"** (O. Scherer, 2026).
+The published, frozen v1 pipeline lives in the repo root and matches the paper
+(DOI: 10.5281/zenodo.22063360). Everything in this folder is post-publication
+work: additive candidate modules and stress tests, each scored against the
+frozen baseline on both its target scenario and a regression scenario. Nothing
+here modifies v1; validated modules only ever add proposals through the same
+conservative gate.
 
-Utilities' meter-to-transformer records are ~5-20% wrong. Tools that fix them from AMI
-voltage correlation are graded on detection/correction accuracy — but every false-positive
-"correction" breaks a record that was right. This repo demonstrates, on public EPRI feeder
-models, that a pipeline beating the published state of the art (93% vs 51-56% correction)
-still *reduces* net record accuracy when applied blindly at realistic error rates, and that
-confidence-gated application with ~40 field verifications recovers most of the achievable
-value with a bounded worst case.
+Status as of 2026-08-24 (all on EPRI ckt5, seeds (7,5),(17,15),(27,25) unless noted):
 
-Patent pending (US provisional filed Aug 2026).
+| File | What it is | Status |
+|---|---|---|
+| `gauntlet2.py` | Four pre-mortem stressors: heterogeneous service drops, block corruption, grid-snapped geocoding, regulator zone tap steps | Findings: drops ~1pt, geocoding ~0pt, tap steps ~2pt (gate holds), block corruption is a real blind spot for v1 (det 13.5%, corr 0%) |
+| `run_hetero.py` | Re-simulation of ckt5 with lognormal 50–400 ft service drops (produces V15_90d_hetero.npy) | Done; input to gauntlet2a |
+| `block_detector.py` | Additive block-error detector v1: bimodal eigenvector split of a recorded group's correlation matrix, migrated cluster reassigned to nearest empty transformer | Validated: 100% flag precision, recall 25–36%, net +1.5–3.3 pts on block scenario; silent on scattered and clean data |
+| `block_detector2.py` | Adds displaced-group test (coherent group whose premise centroid sits ≥1.25× spacing from its recorded transformer and ≥0.75× spacing closer to an empty one) | Validated: precision 0.97–1.00, recall 40–44%, net +2.7–3.8 pts; still silent on scattered and clean data |
+| `review_probe.py`, `review_probe2.py`, `review_probe3.py` | Adversarial review probes: frozen-noise variance, corruption-model hardness, singleton false-positive rate, biased premise coordinates, coupling-statistic effective sample size, decoy empty transformers | Results written up in `review_response.md`; corrections and scope statements in the root `KNOWN_LIMITATIONS.md` |
+| `resid_test.py` | Local common-mode residualization vs tap steps | REJECTED — fails the baseline regression check (corr_fix −4 pts). Kept as documented dead end |
 
-## Setup
+Promotion rule: a module ships to a field deployment only after (a) the failure
+mode it targets is observed in real data, or (b) it passes the full multi-seed,
+both-feeder treatment. Until then the deployable product is exactly v1.
 
-```bash
-pip install -r requirements.txt
-git clone --depth 1 --filter=blob:none --sparse https://github.com/dss-extensions/electricdss-tst
-cd electricdss-tst && git sparse-checkout set Version8/Distrib/EPRITestCircuits && cd ..
-```
+Note: `calib.py`, `singleton_solve.py` and `thermal.py` live in the repository root, not here —
+they were part of the original publication. `singleton_solve.py` was corrected in Aug 2026
+(its coupling statistic was wrongly described as a z-score); see `KNOWN_LIMITATIONS.md`.
 
-Edit `lib.py` `CKT` path if your checkout lives elsewhere (default expects
-`electricdss-tst/Version8/Distrib/EPRITestCircuits/ckt5`).
-
-## Reproducing the paper
-
-Run in order (times on a laptop-class machine):
-
-| Step | Script | Produces | ~Time |
-|---|---|---|---|
-| 1 | `run_powerflow.py` | meta.csv + 14d baseline voltages (ckt5) | 10 s |
-| 2 | `run_90d.py` | 90 days @5-min -> true 15-min averages, ckt5 (V15_90d, P15_90d) | 3 min |
-| 3 | `run_ckt24.py` | 56 days @15-min, ckt24 (V24, meta24) | 2 min |
-| 4 | `audit.py` | headline multi-seed results + leak-free length curve (paper §4.1-4.3) | 5 min |
-| 5 | `harden2.py` | 5%/20% corruption sweeps + gate-variance study (§4.3) | 3 min |
-| 6 | `thermal.py` | C57.91 aging, hosting capacity, ranking-fidelity (§4.6) | 1 min |
-| 7 | `premise_gps.py` | premise-GPS quality sweep (§4.5) | 2 min |
-| 8 | `calib.py` | simulation-pretrained confidence calibration (§6 preliminary) | 3 min |
-| 9 | `singleton_solve.py` | directional load-coupling singleton test (§6 preliminary) | 3 min |
-
-Earlier exploratory scripts (`cluster.py`, `degrade.py`, `compare.py`, `improved.py`,
-`iterate.py`, `loadsig.py`, `gate.py`, `sens.py`, `score_ckt24.py`,
-`length_frozen_singleton.py`, `run_1min.py`) are retained for provenance; the paper's
-reported numbers come from steps 4-9, which use leak-free candidate construction.
-
-## Data
-
-All inputs are public: EPRI ckt5/ckt24 circuit models from the official OpenDSS test-case
-repository. Load profiles are synthesized (generators embedded in the run scripts,
-deterministic seeds). No utility data is included. If you are a utility interested in
-field validation — the necessary next step named in the paper — contact the author:
-ozziescherer@gmail.com.
-
-## License
-
-MIT. If you use this work, please cite the preprint.
+Scripts in this folder expect to be run from the repository root, e.g.
+`python v2-experiments/block_detector.py`. They put the repo root on `sys.path` themselves and
+read data via `lib.OUT`.

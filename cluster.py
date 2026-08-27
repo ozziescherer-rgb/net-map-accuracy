@@ -3,9 +3,8 @@ import re
 import numpy as np
 import pandas as pd
 from scipy.stats import rankdata
+from lib import OUT, CKT
 
-CKT = "/home/user/electricdss-tst/Version8/Distrib/EPRITestCircuits/ckt5"
-OUT = "/home/user/xfmr"
 rng = np.random.default_rng(7)
 
 V = np.load(f"{OUT}/voltages.npy")

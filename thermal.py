@@ -9,13 +9,13 @@ EV hosting headroom. Plus: how badly record errors distort the risk ranking.
 """
 import re
 import numpy as np, pandas as pd
-from lib import load_meta, corr_matrix, degrade, CKT
+from lib import load_meta, corr_matrix, degrade, CKT, OUT
 
 meta, true_g, nearest = load_meta()
 n = len(true_g); nx = true_g.max()+1
 xfmrs = sorted(meta.xfmr.unique())
-P = np.load("/home/user/xfmr/P15_90d.npy")     # kW per meter, 15-min, 90d
-V90 = np.load("/home/user/xfmr/V15_90d.npy")
+P = np.load(f"{OUT}/P15_90d.npy")     # kW per meter, 15-min, 90d
+V90 = np.load(f"{OUT}/V15_90d.npy")
 T, _ = P.shape
 DAYS = 90
 
@@ -159,5 +159,5 @@ out = pd.DataFrame(dict(
     pct_life_yr_corrected=res["corrected"][0],
     peakK=res["corrected"][1], avgK=res["corrected"][2],
     peak_hotspot_C=res["corrected"][3], ev_headroom=host))
-out.to_csv("/home/user/xfmr/thermal_results.csv", index=False)
+out.to_csv(f"{OUT}/thermal_results.csv", index=False)
 print("saved thermal_results.csv")

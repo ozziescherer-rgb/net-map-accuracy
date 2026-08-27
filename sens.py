@@ -1,11 +1,11 @@
 """Corruption-rate sensitivity on ckt5 (90d): does the story hold at 5% / 10% / 20%?"""
 import re
 import numpy as np
-from lib import load_meta, corr_matrix, degrade, CKT
+from lib import load_meta, corr_matrix, degrade, CKT, OUT
 
 meta, true_g, nearest = load_meta()
 n = len(true_g)
-C = corr_matrix(degrade(np.load("/home/user/xfmr/V15_90d.npy")))
+C = corr_matrix(degrade(np.load(f"{OUT}/V15_90d.npy")))
 coords = {}
 for ln in open(f"{CKT}/Buscoords_ckt5.dss"):
     p = ln.replace(",", " ").split()

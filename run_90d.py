@@ -3,9 +3,8 @@ import os, time
 import numpy as np
 import pandas as pd
 import opendssdirect as dss
+from lib import OUT, CKT
 
-CKT = "/home/user/electricdss-tst/Version8/Distrib/EPRITestCircuits/ckt5"
-OUT = "/home/user/xfmr"
 DAYS, STEP_MIN = 90, 5
 SPD = 24*60//STEP_MIN
 STEPS = DAYS*SPD

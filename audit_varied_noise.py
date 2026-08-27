@@ -1,5 +1,10 @@
-"""Hardened rerun: leak-free candidates (GPS+recorded only), multi-seed, containment check,
-observable gate via sampled-verification calibration, gated thermal capture."""
+"""Variant of audit.py that draws a FRESH AMI noise realization for every seed.
+
+audit.py (which reproduces the preprint exactly) computes the degraded correlation matrix once
+outside the seed loop, so all seeds share one measurement-noise draw. This script varies it, to
+show the effect of that third randomness source. Result on ckt5: means move <= 0.5 pt and in the
+favourable direction (corr_fix 0.930 -> 0.935); the standard deviation on detection recall widens
+from +/-0.026 to +/-0.034. See KNOWN_LIMITATIONS.md."""
 import re
 import numpy as np, pandas as pd
 from lib import corr_matrix, degrade, CKT, OUT, CKT24
@@ -100,17 +105,15 @@ def pipeline(C, true_g, XY, nearest, spacing, frac, cseed, jseed, K=5, verify_n=
 results = {}
 for feeder in ("ckt5", "ckt24"):
     V, true_g, XY, nearest, sp = load_feeder(feeder)
-    # NOTE (review, Aug 2026): the degraded correlation matrix is computed ONCE here, outside
-    # the seed loop, and degrade() uses a fixed default seed -- so the seeds below vary the
-    # corruption draw and the premise-GPS jitter but share ONE AMI measurement-noise
-    # realization. This is left exactly as published so this script reproduces the preprint's
-    # numbers bit for bit. For the variant that draws fresh noise per seed, and for the
-    # measured effect (means move <= 0.5 pt, in the favourable direction; the error bar on
-    # det widens from +/-0.026 to +/-0.034), see audit_varied_noise.py and KNOWN_LIMITATIONS.md.
-    C = corr_matrix(degrade(V))
     rows = []
     seeds = [(7, 5), (17, 15), (27, 25), (37, 35), (47, 45)] if feeder == "ckt5" else [(7, 5), (17, 15), (27, 25)]
-    for cs, js in seeds:
+    # REVIEW FIX (Aug 2026): the published preprint computed the degraded correlation matrix
+    # ONCE outside this loop (degrade() defaults to seed=11), so every "seed" shared a single
+    # AMI noise realization. Each seed now draws its own. Measured effect on ckt5: means move
+    # <= 0.5 pt and upward (corr_fix 0.930 -> 0.935), so the published figures were the
+    # conservative ones; the error bar on det widens (+/-0.026 -> +/-0.034).
+    for si, (cs, js) in enumerate(seeds):
+        C = corr_matrix(degrade(V, seed=2000 + si))
         rows.append(pipeline(C, true_g, XY, nearest, sp, 0.10, cs, js))
     df = pd.DataFrame(rows)
     results[feeder] = df
@@ -118,13 +121,5 @@ for feeder in ("ckt5", "ckt24"):
     print(f"\n== {feeder} (10% corruption, {len(rows)} seeds, LEAK-FREE) ==")
     for k in ("contain", "det", "fpr", "corr_fix", "base", "oracle_gate", "obs_gate", "blind"):
         print(f"  {k:12s} {m[k]:.3f} ± {s[k]:.3f}")
-    df.to_csv(f"{OUT}/audit_{feeder}.csv", index=False)
+    df.to_csv(f"{OUT}/audit_varied_{feeder}.csv", index=False)
 
-# leak-free length curve, ckt5, seed (7,5)
-print("\n== leak-free length curve (ckt5) ==")
-V, true_g, XY, nearest, sp = load_feeder("ckt5")
-for days in (7, 14, 28, 56, 90):
-    C = corr_matrix(degrade(V[:days*96]))
-    r = pipeline(C, true_g, XY, nearest, sp, 0.10, 7, 5)
-    print(f"  {days:3d}d det={r['det']:.3f} fpr={r['fpr']:.3f} corr_fix={r['corr_fix']:.3f} "
-          f"oracle_gate={r['oracle_gate']:.3f} obs_gate={r['obs_gate']:.3f}")

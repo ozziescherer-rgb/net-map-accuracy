@@ -6,21 +6,21 @@ evaluate on ckt24 (different feeder, never seen). Questions:
 """
 import re
 import numpy as np, pandas as pd
-from lib import corr_matrix, degrade, CKT
+from lib import corr_matrix, degrade, CKT, OUT, CKT24
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.isotonic import IsotonicRegression
 
 def build(feeder):
     if feeder == "ckt5":
-        meta = pd.read_csv("/home/user/xfmr/meta.csv"); key = "xfmr"
-        V = np.load("/home/user/xfmr/V15_90d.npy")
+        meta = pd.read_csv(f"{OUT}/meta.csv"); key = "xfmr"
+        V = np.load(f"{OUT}/V15_90d.npy")
         ck, bc, xt = CKT, "Buscoords_ckt5.dss", "XFR_Loads_ckt5.dss"
         pat = r"New Transformer\.(\S+).*?wdg=1 bus=(\S+)"
     else:
-        meta = pd.read_csv("/home/user/xfmr/meta24.csv"); key = "xf"
-        V = np.load("/home/user/xfmr/V24.npy")
-        ck = "/home/user/electricdss-tst/Version8/Distrib/EPRITestCircuits/ckt24"
+        meta = pd.read_csv(f"{OUT}/meta24.csv"); key = "xf"
+        V = np.load(f"{OUT}/V24.npy")
+        ck = CKT24
         bc, xt = "buscoords_ckt24.dss", "transformers_ckt24.dss"
         pat = r"New\s+Transformer\.(\S+).*?wdg=1\s+bus=(\S+)"
     xfmrs = sorted(meta[key].unique()); gid = {x: i for i, x in enumerate(xfmrs)}

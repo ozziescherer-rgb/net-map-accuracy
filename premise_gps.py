@@ -2,11 +2,11 @@
 location + jitter; use it to (a) rescue singleton assignment, (b) re-rank all corrections."""
 import re
 import numpy as np, pandas as pd
-from lib import load_meta, corr_matrix, degrade, CKT
+from lib import load_meta, corr_matrix, degrade, CKT, OUT
 
 meta, true_g, nearest = load_meta()
 n = len(true_g); nx = true_g.max()+1
-V90 = np.load("/home/user/xfmr/V15_90d.npy")
+V90 = np.load(f"{OUT}/V15_90d.npy")
 
 # transformer coordinates
 coords = {}

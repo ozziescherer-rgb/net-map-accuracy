@@ -2,10 +2,10 @@
 Round-trip: score -> reassign worst -> rescore. Then add a voltage-vs-group-load
 partial-correlation score: your voltage dips when YOUR transformer's load spikes."""
 import numpy as np, pandas as pd
-from lib import load_meta, corr_matrix, degrade
+from lib import load_meta, corr_matrix, degrade, OUT
 
 meta, true_g, nearest = load_meta()
-V1 = np.load("/home/user/xfmr/V_1min.npy")
+V1 = np.load(f"{OUT}/V_1min.npy")
 n = len(true_g)
 V = degrade(V1.reshape(-1, 15, n).mean(axis=1))          # AMI-realistic voltage
 C = corr_matrix(V)
@@ -55,6 +55,6 @@ for rnd in range(4):
 fixable = np.array([np.sum((rec0 == true_g[i]) & (np.arange(n) != i) &
                            (true_g == true_g[i])) > 0 for i in bad])
 print(f"iterative final: corr_fixable={(labels[bad][fixable]==true_g[bad][fixable]).mean():.3f}")
-np.save("/home/user/xfmr/labels_iter.npy", labels)
-np.save("/home/user/xfmr/rec0.npy", rec0)
-np.save("/home/user/xfmr/bad.npy", bad)
+np.save(f"{OUT}/labels_iter.npy", labels)
+np.save(f"{OUT}/rec0.npy", rec0)
+np.save(f"{OUT}/bad.npy", bad)

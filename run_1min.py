@@ -4,9 +4,8 @@ import os, time
 import numpy as np
 import pandas as pd
 import opendssdirect as dss
+from lib import OUT, CKT
 
-CKT = "/home/user/electricdss-tst/Version8/Distrib/EPRITestCircuits/ckt5"
-OUT = "/home/user/xfmr"
 DAYS = 28
 SPD = 1440
 STEPS = DAYS * SPD

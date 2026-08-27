@@ -1,11 +1,11 @@
 """(a) length saturation curve 7->90d, (b) core-frozen refinement, (c) singleton elimination."""
 import numpy as np, pandas as pd
-from lib import load_meta, corr_matrix, degrade
+from lib import load_meta, corr_matrix, degrade, OUT
 
 meta, true_g, nearest = load_meta()
 n = len(true_g)
-V90 = np.load("/home/user/xfmr/V15_90d.npy")
-P90 = np.load("/home/user/xfmr/P15_90d.npy")
+V90 = np.load(f"{OUT}/V15_90d.npy")
+P90 = np.load(f"{OUT}/P15_90d.npy")
 nx = true_g.max() + 1
 
 r = np.random.default_rng(7)
@@ -104,4 +104,4 @@ print(f"elimination rule fired on {attempted}; correct singleton assignment: "
       f"{recovered} ({prec:.1%} precision vs 0% for correlation-only)")
 rows.append(dict(tag="singleton elimination", det=np.nan, fpr=np.nan,
                  corr=prec, corr_fix=np.nan))
-pd.DataFrame(rows).to_csv("/home/user/xfmr/final_curves.csv", index=False)
+pd.DataFrame(rows).to_csv(f"{OUT}/final_curves.csv", index=False)

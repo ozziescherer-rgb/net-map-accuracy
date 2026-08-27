@@ -4,9 +4,9 @@ import re, os, time
 import numpy as np
 import pandas as pd
 import opendssdirect as dss
+from lib import OUT, CKT24
 
-CKT = "/home/user/electricdss-tst/Version8/Distrib/EPRITestCircuits/ckt24"
-OUT = "/home/user/xfmr"
+CKT = CKT24
 DAYS, SPD = 56, 96
 STEPS = DAYS*SPD
 rng = np.random.default_rng(99)

@@ -1,9 +1,9 @@
 """Does true 15-min interval averaging destroy the signal? Plus FPR margin sweep + data-length curve."""
 import numpy as np, pandas as pd
-from lib import load_meta, corr_matrix, experiment, degrade
+from lib import load_meta, corr_matrix, experiment, degrade, OUT
 
 meta, true_g, nearest = load_meta()
-V1 = np.load("/home/user/xfmr/V_1min.npy")   # (40320, n)
+V1 = np.load(f"{OUT}/V_1min.npy")   # (40320, n)
 STEPS, n = V1.shape
 
 V15avg = V1.reshape(-1, 15, n).mean(axis=1)            # true AMI: interval average
@@ -39,4 +39,4 @@ for margin in (0.0, 0.002, 0.005, 0.01, 0.02, 0.05):
     print(f"margin={margin:<6} det={r['detection_recall']:.3f} fpr={r['false_positive_rate']:.3f} "
           f"corr={r['correction_acc']:.3f}", flush=True)
 
-pd.DataFrame(rows).to_csv("/home/user/xfmr/compare_results.csv", index=False)
+pd.DataFrame(rows).to_csv(f"{OUT}/compare_results.csv", index=False)

@@ -1,13 +1,26 @@
 """Shared: ground truth, correlation, detection/correction experiment."""
+import os
 import re
 import numpy as np
 import pandas as pd
 from scipy.stats import rankdata
 
-CKT = "/home/user/electricdss-tst/Version8/Distrib/EPRITestCircuits/ckt5"
+# --- paths -------------------------------------------------------------------
+# OUT   : where generated data (meta.csv, V*.npy, results) is read from / written to.
+#         Defaults to the directory holding this file. Override with NMA_OUT.
+# CKT   : EPRI ckt5 model from the OpenDSS test-case repo (see README for the clone
+#         command). Defaults to ../electricdss-tst/... relative to OUT. Override with
+#         NMA_CKT. CKT24 is the ckt24 sibling; override with NMA_CKT24.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.environ.get("NMA_OUT", _HERE)
+_TST = os.environ.get(
+    "NMA_TST", os.path.join(os.path.dirname(OUT), "electricdss-tst"))
+_EPRI = os.path.join(_TST, "Version8", "Distrib", "EPRITestCircuits")
+CKT = os.environ.get("NMA_CKT", os.path.join(_EPRI, "ckt5"))
+CKT24 = os.environ.get("NMA_CKT24", os.path.join(_EPRI, "ckt24"))
 
 def load_meta():
-    meta = pd.read_csv("/home/user/xfmr/meta.csv")
+    meta = pd.read_csv(f"{OUT}/meta.csv")
     xfmrs = sorted(meta.xfmr.unique())
     gid = {x: i for i, x in enumerate(xfmrs)}
     true_g = meta.xfmr.map(gid).values
