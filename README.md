@@ -1,4 +1,4 @@
-# v2 experiments (work in progress — NOT the published pipeline)
+# v2 experiments (work in progress, NOT the published pipeline)
 
 The published, frozen v1 pipeline lives in the repo root and matches the paper
 (DOI: 10.5281/zenodo.22063360). Everything in this folder is post-publication
