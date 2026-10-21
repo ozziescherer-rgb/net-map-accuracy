@@ -1,6 +1,5 @@
 Known limitations and review notes
-This file exists because the fastest way to lose an engineer's trust is for them to find
-something you knew about and did not say. Everything below was found by adversarial review of
+Everything below was found by adversarial review of
 this repository (Aug 26, 2026) and tested; the probe scripts are in the repository root (`review_probe*.py`, `gauntlet2.py`, `resid_test.py`).
 None of these change a number reported in the preprint (DOI 10.5281/zenodo.22063360). Two are
 corrections to how results were computed or described; the rest are scope statements.
